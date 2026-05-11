@@ -20,5 +20,8 @@ dependencies = [
 [project.scripts]
 skillbank = "skillbank.cli:cli"
 
+[project.optional-dependencies]
+dev = ["pytest>=8.0.0"]
+
 [tool.setuptools.packages.find]
 where = ["src"]
