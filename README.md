@@ -10,16 +10,27 @@ This mirrors how experienced developers maintain personal utility libraries. The
 
 The skill bank is backed by [ChromaDB](https://www.trychroma.com/) for persistent local storage and [sentence-transformers](https://www.sbert.net/) (MiniLM-L6) for embedding. Code generation and skill extraction use the Claude API (Anthropic). Deduplication prevents redundant entries via cosine-similarity thresholding.
 
-## What Works (M1 — scaffold)
+## What Works
 
+### M1 — scaffold
 - Python package scaffold under `src/skillbank/` (src layout, `setuptools.build_meta`)
 - `pyproject.toml` with pinned dependencies and `[project.scripts]` entry point
 - `requirements.txt` and `requirements-dev.txt` for visibility
 - `.gitignore` and MIT `LICENSE`
 - CLI entry point wired: `skillbank --help` and `skillbank --version` work
-- Four command stubs registered (`run`, `list`, `reset`, `demo`) — each raises `Not implemented yet` until M2+
+- Four command stubs registered (`run`, `list`, `reset`, `demo`) — each raises `Not implemented yet` until M3+
 - Draft architecture diagram in `docs/architecture.md`
 - `tests/` directory with scaffold smoke test
+
+### M2 — skill bank storage
+- `SkillBank` class in `src/skillbank/skill_bank.py` backed by ChromaDB (embedded, disk-persistent at `.chroma/`)
+- `Skill` dataclass: `name`, `description`, `code`, `tags`, `id`
+- MiniLM-L6-v2 embeddings via `sentence-transformers` (local, no GPU, ~90 MB download on first run)
+- `add_skill(skill)` — persists a skill; returns `False` if a near-duplicate (cosine similarity > 0.92) already exists
+- `search_skills(query, top_k=3)` — returns top-k semantically similar skills
+- `list_skills()` — returns all stored skills
+- `reset()` — clears the collection
+- 8 pytest unit tests covering round-trip storage, search relevance, deduplication, and reset
 
 ## CLI Interface
 
@@ -52,7 +63,7 @@ Examples:
   skillbank reset
 ```
 
-> **Note:** `run`, `list`, `reset`, and `demo` raise a "Not implemented yet" error until M2+. Only `--help` and `--version` are functional in this release.
+> **Note:** `run`, `list`, `reset`, and `demo` raise a "Not implemented yet" error until M5 (CLI wiring). Only `--help` and `--version` are functional at the command line in this release. The storage layer (`SkillBank`) is complete and tested; see the Quick Start for how to run the test suite.
 
 ## Quick Start
 
@@ -63,14 +74,18 @@ cd skillbank-agent
 python -m venv .venv
 source .venv/bin/activate  # Windows: .venv\Scripts\activate
 
-# 2. Install in editable mode
+# 2. Install in editable mode (includes dev dependencies for tests)
 pip install -e .
+pip install pytest  # or: pip install -r requirements-dev.txt
 
-# 3. Set your Anthropic API key
-export ANTHROPIC_API_KEY=sk-ant-...
-
-# 4. Verify the CLI is available
+# 3. Verify the CLI is available
 skillbank --help
+
+# 4. Run the skill bank test suite (8 tests, no API key required)
+pytest tests/test_skill_bank.py -v
+
+# 5. Set your Anthropic API key (required from M3 onward)
+export ANTHROPIC_API_KEY=sk-ant-...
 ```
 
 ## Architecture
@@ -84,10 +99,10 @@ See [`docs/architecture.md`](docs/architecture.md) for a diagram of the agent lo
 | Milestone | Scope | Status |
 |-----------|-------|--------|
 | M1 | Scaffold: package structure, CLI stubs, architecture draft | **done** |
-| M2 | ChromaDB integration, skill store CRUD | planned |
-| M3 | Embedding pipeline (MiniLM-L6), skill retrieval | planned |
-| M4 | Claude Haiku code generation + skill extraction | planned |
-| M5 | Subprocess sandbox execution, feedback loop | planned |
+| M2 | ChromaDB integration, skill store CRUD, deduplication | **done** |
+| M3 | Claude Haiku code generation + skill extraction | planned |
+| M4 | Subprocess sandbox execution, feedback loop | planned |
+| M5 | CLI commands wired end-to-end | planned |
 | M6 | Demo suite, benchmarks, full architecture docs | planned |
 
 ## License
