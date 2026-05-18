@@ -1,5 +1,9 @@
 # SkillBank Agent
 
+
+> **Video walkthrough:** https://youtu.be/tZjgU920G6U
+> **60-second overview:** https://youtu.be/x7nHhxtC6wc
+
 An accumulative LLM agent that builds a growing library of reusable Python skills as it solves tasks — inspired by the [Co-Evolving LLM Decision and Skill Bank](https://arxiv.org/abs/2408.08032) paper.
 
 ## Concept & Motivation
